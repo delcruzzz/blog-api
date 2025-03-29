@@ -1,5 +1,5 @@
 # Usa la imagen oficial de Bun
-FROM oven/bun:1.2.7 AS builder
+FROM oven/bun:1.1.9 AS builder
 
 # Establecer el directorio de trabajo
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN bun install --frozen-lockfile && bun run build
 # --------------------------------------------
 
 # Crear la imagen final
-FROM oven/bun:1.2.7 AS runner
+FROM oven/bun:1.1.9 AS runner
 
 WORKDIR /app
 
