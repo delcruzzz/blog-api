@@ -1,4 +1,6 @@
+import { Type } from 'class-transformer';
 import {
+  IsArray,
   IsEmail,
   IsIn,
   IsInt,
@@ -45,4 +47,9 @@ export class CreateUserDto {
   @IsPositive()
   @IsIn([1, 2])
   status: number;
+
+  @IsInt({ each: true })
+  @Type(() => Number)
+  @IsArray()
+  rolesIds: number[];
 }

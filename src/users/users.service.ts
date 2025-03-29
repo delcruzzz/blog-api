@@ -4,13 +4,15 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Role } from 'src/roles/entities/role.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User) private readonly usersRepository: Repository<User>,
+    @InjectRepository(Role) private readonly rolesRepository: Repository<Role>,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -20,6 +22,13 @@ export class UsersService {
     user.password = passwordHashed;
 
     try {
+      if (createUserDto.rolesIds) {
+        const roles = await this.rolesRepository.findBy({
+          id: In(createUserDto.rolesIds),
+        });
+        user.roles = roles;
+      }
+
       await this.usersRepository.save(user);
 
       return {
@@ -47,6 +56,7 @@ export class UsersService {
   async findAll() {
     return await this.usersRepository
       .createQueryBuilder('users')
+      .innerJoin('users.roles', 'roles')
       .select([
         'users.id',
         'users.name',
@@ -54,8 +64,11 @@ export class UsersService {
         'users.phone',
         'users.email',
         'users.username',
-        'users.createdAt',
-        'users.updatedAt',
+        'users.status',
+        'roles.id',
+        'roles.name',
+        'roles.abbreviation',
+        'roles.status',
       ])
       .getMany();
   }
@@ -63,6 +76,7 @@ export class UsersService {
   async findOne(id: number) {
     const user = await this.usersRepository
       .createQueryBuilder('users')
+      .innerJoin('users.roles', 'roles')
       .select([
         'users.id',
         'users.name',
@@ -70,8 +84,11 @@ export class UsersService {
         'users.phone',
         'users.email',
         'users.username',
-        'users.createdAt',
-        'users.updatedAt',
+        'users.status',
+        'roles.id',
+        'roles.name',
+        'roles.abbreviation',
+        'roles.status',
       ])
       .where('users.id = :id', { id })
       .getOne();
@@ -95,6 +112,13 @@ export class UsersService {
       if (updateUserDto.password) {
         const passwordHashed = await bcrypt.hash(user.password, 10);
         user.password = passwordHashed;
+      }
+
+      if (updateUserDto.rolesIds) {
+        const roles = await this.rolesRepository.findBy({
+          id: In(updateUserDto.rolesIds),
+        });
+        user.roles = roles;
       }
 
       await this.usersRepository.save(user);

@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Role } from 'src/roles/entities/role.entity';
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity({ name: 'users' })
 export class User {
@@ -46,4 +53,11 @@ export class User {
     default: () => 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  // relaciones
+  @ManyToMany(() => Role, (role: Role) => role.users, { nullable: false })
+  @JoinTable({
+    name: 'roles_users',
+  })
+  roles: Role[];
 }
