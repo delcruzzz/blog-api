@@ -1,9 +1,11 @@
+import { Post } from 'src/posts/entities/post.entity';
 import { Role } from 'src/roles/entities/role.entity';
 import {
   Column,
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -60,4 +62,7 @@ export class User {
     name: 'roles_users',
   })
   roles: Role[];
+
+  @OneToMany(() => Post, (post: Post) => post.user, { nullable: false })
+  posts: Post[];
 }
