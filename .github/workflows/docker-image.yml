@@ -1,0 +1,48 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Build the Docker image
+      uses: actions/checkout@v4
+      with: 
+          fetch-depth: 0
+
+    - name: Git Semantic Version
+      id: version
+      uses: PaulHatch/semantic-version@v4.0.3
+      with:
+        major_pattern: "major:"
+        minor_pattern: "feat:"
+        format: "${major}.${minor}.${patch}-prerelease${increment}"
+
+    - name: Log in to Docker Hub
+      env: 
+        DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+        DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
+      run: |
+        echo "Iniciando login"
+        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+        echo "Fin del login!!!"
+
+    - name: Build Docker Image
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        docker build -t leonardo14/blog-api:${{ env.NEW_VERSION }} .
+        docker build -t leonardo14/blog-api:latest .
+        
+    - name: Push Docker Image
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        docker push leonardo14/blog-api:${{ env.NEW_VERSION }}
+        docker push leonardo14/blog-api:latest
