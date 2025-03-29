@@ -1,31 +1,28 @@
-# Usa la imagen oficial de Bun
-FROM oven/bun:1.1.9 AS builder
+# Usa la imagen de Bun
+FROM oven/bun:1.2.7 AS builder
 
-# Establecer el directorio de trabajo
+# Establecer directorio de trabajo
 WORKDIR /app
 
-# Copiar los archivos del proyecto
-COPY package.json bun.lockb tsconfig.json ./
-COPY src ./src
+# Copiar archivos del proyecto
+COPY . .
 
-# Instalar dependencias y compilar la app
+# Instalar dependencias y compilar
 RUN bun install --frozen-lockfile && bun run build
 
-# --------------------------------------------
+# ---------------------------------------
 
-# Crear la imagen final
-FROM oven/bun:1.1.9 AS runner
+# Segunda etapa
+FROM oven/bun:1.2.7 AS runner
 
 WORKDIR /app
 
-# Copiar los archivos necesarios desde la fase de construcción
+# Copiar solo lo necesario desde la fase anterior
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/bun.lockb ./
 
-# Exponer el puerto de NestJS
 EXPOSE 3000
 
-# Comando para ejecutar la aplicación
 CMD ["bun", "run", "start"]
