@@ -24,10 +24,6 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/bun.lockb ./
 
-# Copiar el archivo .env en caso de que se pase al contenedor
-ARG ENV_FILE=.env
-COPY ${ENV_FILE} .env
-
 # Exponer el puerto de NestJS
 EXPOSE 3000
 
